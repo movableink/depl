@@ -11,7 +11,7 @@ A typical deployment would look like this:
     » ds3 production
     Attempting to deploy d836d33
 
-    Difference of 6 new commit(s) between de0aed09c7deddb93224a8c3da0e08d3ed3c7293 and d836d33:
+    Difference of 6 new commit(s) between de0aed0 and d836d33:
 
         d836d33 Michael Nutt         8 minutes ago	   ignore our own .deploy
         9046842 Michael Nutt         8 minutes ago	   make bin executable
