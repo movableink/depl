@@ -1,0 +1,68 @@
+#!/usr/bin/env ruby
+
+begin
+  require 'deploy_s3'
+rescue LoadError
+  require 'rubygems'
+  require 'deploy_s3'
+end
+
+require 'optparse'
+require 'highline/import'
+require 'colorize'
+
+options = {}
+
+options[:environment] = ARGV.pop
+
+options[:rev] = ENV['REV']
+
+optparse = OptionParser.new do |opts|
+  opts.banner = "Usage: ds3 [environment] [options]"
+
+  opts.on("-c", "--config", String, "Location of .deploy configuration file") do |c|
+    options[:config_file] = c
+  end
+
+  opts.on("-r", "--rev", String, "Revision to deploy (can be sha, branch, etc)") do |r|
+    options[:rev] = r
+  end
+end
+optparse.parse!
+
+unless options[:environment]
+  puts "Error: environment required"
+  puts optparse
+  exit 1
+end
+
+config_path = options[:config_file] || "./.deploy"
+config = YAML::load_file(config_path)
+
+deploy = DeployS3::Main.new(config, options)
+
+if deploy.up_to_date
+  puts "Everything up-to-date (#{deploy.environment.green}: #{deploy.remote_sha.green})"
+  exit 0
+end
+
+if deploy.remote_sha.nil?
+  puts "New deployment: #{deploy.local_sha}"
+else
+  puts "Attempting to deploy #{deploy.local_sha.bold}", ""
+  commits = "#{deploy.commit_count} new commit(s)".green
+  puts "Difference of #{commits} between #{deploy.remote_sha} and #{deploy.local_sha}:"
+  puts deploy.diff
+end
+
+if deploy.remote_sha && deploy.older_local_sha
+  puts "WARNING: The commit you are deploying is older than what is currently on #{deploy.environment}. Missing commits: ".bold
+  puts deploy.reverse_diff.red
+  puts ""
+end
+
+confirm = ask("Deploy? [Y/N] ") { |yn| yn.limit = 1, yn.validate = /[yn]/i }
+if confirm.downcase == 'y'
+  deploy.save_sha
+  puts "Deployed #{deploy.remote_sha}"
+end

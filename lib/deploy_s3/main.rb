@@ -1,0 +1,70 @@
+require 'fog'
+
+module DeployS3
+  class Main
+    def initialize(config, options)
+      raise "Missing s3: option in .deploy file" unless config['s3']
+
+      @config = config
+      @path = config['s3'].split("/")
+      @bucket = @path.shift
+      @options = options
+    end
+
+    def environment
+      @options[:environment]
+    end
+
+    def save_sha
+      directory = connection.directories.get(@bucket)
+      file = directory.files.create(:key => key,
+                                    :body => local_sha)
+      @_remote_sha = nil
+    end
+
+    def connection
+      @_connection ||= Fog::Storage.new(:provider => 'AWS')
+    end
+
+    def remote_sha
+      return @_remote_sha if @_remote_sha
+
+      directory = connection.directories.get(@bucket)
+      file = directory.files.get(key)
+      @_remote_sha = file.body if file
+    end
+
+    def filename
+      [environment, 'sha'].join('.')
+    end
+
+    def key
+      [@path, filename].join("/")
+    end
+
+    def up_to_date
+      local_sha == remote_sha
+    end
+
+    def local_sha
+      rev = @options[:rev] || @config[:branch] || 'head'
+      `git rev-parse #{rev}`.chomp
+    end
+
+    def diff
+      `git log --pretty=format:'%h     \t%s    (%an, %ar)' #{remote_sha}..#{local_sha}`
+    end
+
+    def reverse_diff
+      `git log --pretty=format:'%h     \t%s    (%an, %ar)' #{local_sha}..#{remote_sha}`
+    end
+
+    def older_local_sha
+      `git merge-base --is-ancestor #{local_sha} #{remote_sha}` && $?.exitstatus == 0
+    end
+
+    def commit_count
+      diff.split("\n").size
+    end
+  end
+end
