@@ -50,19 +50,51 @@ if deploy.remote_sha.nil?
   puts "New deployment: #{deploy.local_sha}"
 else
   puts "Attempting to deploy #{deploy.local_sha.bold}", ""
+
   commits = "#{deploy.commit_count} new commit(s)".green
-  puts "Difference of #{commits} between #{deploy.remote_sha} and #{deploy.local_sha}:"
-  puts deploy.diff
+  puts "Difference of #{commits} between #{deploy.remote_sha} and #{deploy.local_sha}:", ""
+
+  if deploy.commit_count > 0
+    puts deploy.diff, ""
+  else
+    puts "    There are no new commits.", ""
+  end
 end
 
 if deploy.remote_sha && deploy.older_local_sha
-  puts "WARNING: The commit you are deploying is older than what is currently on #{deploy.environment}. Missing commits: ".bold
+  puts "WARNING: The commit you are deploying is older than what is currently on #{deploy.environment}. Missing commits: ".bold, ""
   puts deploy.reverse_diff.red
   puts ""
 end
 
-confirm = ask("Deploy? [Y/N] ") { |yn| yn.limit = 1, yn.validate = /[yn]/i }
-if confirm.downcase == 'y'
+confirm = ask("Deploy? [(y)es/(n)o/(g)ithub] ") { |yn| yn.limit = 1, yn.validate = /([yng]|yes|no|github)/i }
+
+case confirm.downcase
+when 'y', 'yes'
+  if config['before_hook']
+    `#{config['before_hook']}`
+  end
+
   deploy.save_sha
+
+  if config['after_hook']
+    `#{config['after_hook']}`
+  end
+
   puts "Deployed #{deploy.remote_sha}"
+when 'g', 'github'
+  url = DeployS3::Remote.comparison(deploy.remote_sha, deploy.local_sha)
+  if url
+    if `which open`.size > 0
+      `open #{url}`
+    else
+      puts "  Github: #{url}"
+    end
+  else
+    puts "Unrecognized repository; can't open github"
+    puts "(try `git config --get remote.origin.url`)"
+    exit 1
+  end
+when 'n', 'no'
+  puts "Bye."
 end

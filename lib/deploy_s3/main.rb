@@ -48,15 +48,15 @@ module DeployS3
 
     def local_sha
       rev = @options[:rev] || @config[:branch] || 'head'
-      `git rev-parse #{rev}`.chomp
+      `git rev-parse --verify --short #{rev}`.chomp
     end
 
     def diff
-      `git log --pretty=format:'%h     \t%s    (%an, %ar)' #{remote_sha}..#{local_sha}`
+      `git log --pretty=format:'    %h %<(20)%an %ar\t   %s' -10 #{remote_sha}..#{local_sha}`
     end
 
     def reverse_diff
-      `git log --pretty=format:'%h     \t%s    (%an, %ar)' #{local_sha}..#{remote_sha}`
+      `git log --pretty=format:'    %h %<(20)%an %ar\t   %s' -10 #{local_sha}..#{remote_sha}`
     end
 
     def older_local_sha
@@ -65,6 +65,23 @@ module DeployS3
 
     def commit_count
       diff.split("\n").size
+    end
+  end
+
+  class Remote
+    def self.comparison(from, to)
+      origin_url = `git config --get remote.origin.url`.chomp
+
+      github_url = self.github_from_url origin_url
+      "#{github_url}/compare/#{from}...#{to}" if github_url
+    end
+
+    def self.github_from_url(url)
+      if url =~ /git@github.com:(.*?).git/
+        "https://github.com/#{$1}"
+      elsif url =~ /(.*?):\/\/github.com\/(.*?).git/
+        "https://github.com/#{$1}"
+      end
     end
   end
 end
