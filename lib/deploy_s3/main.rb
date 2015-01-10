@@ -4,7 +4,7 @@ module DeployS3
   class Main
     def initialize(options)
       config_path = options[:config_file] || "./.deploy"
-      @config = YAML::load_file(config_path)
+      @config = options[:config] || YAML::load_file(config_path)
 
       raise "Missing s3: option in .deploy file" unless @config['s3']
 
@@ -62,24 +62,30 @@ module DeployS3
 
     def local_sha
       rev = @options[:rev] || @config[:branch] || 'head'
-      `git rev-parse --verify --short #{rev}`.chomp
+      execute("git rev-parse --verify --short #{rev}").chomp
     end
 
     def diff
-      `git log --pretty=format:'    %h %<(20)%an %ar\t   %s' -10 #{remote_sha}..#{local_sha}`
+      execute "git log --pretty=format:'    %h %<(20)%an %ar\t   %s' -10 #{remote_sha}..#{local_sha}"
     end
 
     def reverse_diff
-      `git log --pretty=format:'    %h %<(20)%an %ar\t   %s' -10 #{local_sha}..#{remote_sha}`
+      execute "git log --pretty=format:'    %h %<(20)%an %ar\t   %s' -10 #{local_sha}..#{remote_sha}"
     end
 
     def older_local_sha
       return false unless remote_sha
-      `git merge-base --is-ancestor #{local_sha} #{remote_sha}` && $?.exitstatus == 0
+      execute("git merge-base --is-ancestor #{local_sha} #{remote_sha}") && $?.exitstatus == 0
     end
 
     def commit_count
       diff.split("\n").size
+    end
+
+  protected
+
+    def execute(cmd)
+      `#{cmd}`
     end
   end
 end
