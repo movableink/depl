@@ -2,11 +2,13 @@ require 'fog'
 
 module DeployS3
   class Main
-    def initialize(config, options)
-      raise "Missing s3: option in .deploy file" unless config['s3']
+    def initialize(options)
+      config_path = options[:config_file] || "./.deploy"
+      @config = YAML::load_file(config_path)
 
-      @config = config
-      @path = config['s3'].split("/")
+      raise "Missing s3: option in .deploy file" unless @config['s3']
+
+      @path = @config['s3'].split("/")
       @bucket = @path.shift
       @options = options
     end
@@ -20,6 +22,18 @@ module DeployS3
       file = directory.files.create(:key => key,
                                     :body => local_sha)
       @_remote_sha = nil
+    end
+
+    def run!
+      if @config['before_hook']
+        `#{@config['before_hook']}`
+      end
+
+      save_sha
+
+      if @config['after_hook']
+        `#{@config['after_hook']}`
+      end
     end
 
     def connection
@@ -60,6 +74,7 @@ module DeployS3
     end
 
     def older_local_sha
+      return false unless remote_sha
       `git merge-base --is-ancestor #{local_sha} #{remote_sha}` && $?.exitstatus == 0
     end
 

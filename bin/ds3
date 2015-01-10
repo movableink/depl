@@ -36,10 +36,7 @@ unless options[:environment]
   exit 1
 end
 
-config_path = options[:config_file] || "./.deploy"
-config = YAML::load_file(config_path)
-
-deploy = DeployS3::Main.new(config, options)
+deploy = DeployS3::Main.new(options)
 
 if deploy.up_to_date
   puts "Everything up-to-date (#{deploy.environment.green}: #{deploy.remote_sha.green})"
@@ -55,31 +52,23 @@ else
   puts "Difference of #{commits} between #{deploy.remote_sha} and #{deploy.local_sha}:", ""
 
   if deploy.commit_count > 0
-    puts deploy.diff, ""
+    puts deploy.diff.yellow, ""
   else
     puts "    There are no new commits.", ""
   end
 end
 
-if deploy.remote_sha && deploy.older_local_sha
+if deploy.older_local_sha
   puts "WARNING: The commit you are deploying is older than what is currently on #{deploy.environment}. Missing commits: ".bold, ""
   puts deploy.reverse_diff.red
   puts ""
 end
 
-confirm = ask("Deploy? [(y)es/(n)o/(g)ithub] ") { |yn| yn.limit = 1, yn.validate = /([yng]|yes|no|github)/i }
+confirm = ask("Deploy? ([y]es / [n]o / [g]ithub) : ") { |yn| yn.limit = 1, yn.validate = /([yng]|yes|no|github)/i }
 
 case confirm.downcase
 when 'y', 'yes'
-  if config['before_hook']
-    `#{config['before_hook']}`
-  end
-
-  deploy.save_sha
-
-  if config['after_hook']
-    `#{config['after_hook']}`
-  end
+  deploy.run!
 
   puts "Deployed #{deploy.remote_sha}"
 when 'g', 'github'
