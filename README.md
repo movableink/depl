@@ -29,8 +29,9 @@ Movable Ink uses Chef to push out new code, and Chef can simply read s3 for the 
 
 ## History
 
-* *0.0.2* - Always save the full git sha to s3. Many CI and deployment tools always upload using the full sha in the path.
-* *0.0.1* - Initial release.
+* _0.0.3_ - Fix command-line option parsing to work as advertised.
+* _0.0.2_ - Always save the full git sha to s3. Many CI and deployment tools always upload using the full sha in the path.
+* _0.0.1_ - Initial release.
 
 ## License
 
