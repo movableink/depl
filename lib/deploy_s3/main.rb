@@ -62,7 +62,7 @@ module DeployS3
 
     def local_sha
       rev = @options[:rev] || @config[:branch] || 'head'
-      execute("git rev-parse --verify --short #{rev}").chomp
+      execute("git rev-parse --verify #{rev}").chomp
     end
 
     def diff
