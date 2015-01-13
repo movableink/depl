@@ -27,6 +27,11 @@ deploy_s3 relies on a `.deploy` file to tell it where to write the git hash.  Ri
 
 Movable Ink uses Chef to push out new code, and Chef can simply read s3 for the revision to know exactly which version to deploy. This allows newly provisioned machines to get the latest deployed version while not requiring changes to the provisioning system every time the project is updated.
 
+## History
+
+* *0.0.2* - Always save the full git sha to s3. Many CI and deployment tools always upload using the full sha in the path.
+* *0.0.1* - Initial release.
+
 ## License
 
 The MIT License. See LICENSE.md.
