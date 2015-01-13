@@ -13,18 +13,18 @@ require 'colorize'
 
 options = {}
 
-options[:environment] = ARGV.pop
+options[:environment] = ARGV.shift
 
 options[:rev] = ENV['REV']
 
 optparse = OptionParser.new do |opts|
   opts.banner = "Usage: ds3 [environment] [options]"
 
-  opts.on("-c", "--config", String, "Location of .deploy configuration file") do |c|
+  opts.on("-c", "--config=CONFIG", String, "Location of .deploy configuration file") do |c|
     options[:config_file] = c
   end
 
-  opts.on("-r", "--rev", String, "Revision to deploy (can be sha, branch, etc)") do |r|
+  opts.on("-r", "--revision=REVISION", String, "Revision to deploy (can be sha, branch, etc)") do |r|
     options[:rev] = r
   end
 end
