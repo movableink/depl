@@ -1,4 +1,4 @@
-module DeployS3
+module Depl
   class Remote
     def self.comparison(from, to)
       origin_url = `git config --get remote.origin.url`.chomp

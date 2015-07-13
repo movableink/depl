@@ -1,14 +1,14 @@
-# deploy_s3
+# depl
 
-deploy_s3 evolved out of Movable Ink's deployments, which typically involved capistrano. Over time, the capistrano scripts got heavier and multiple datacenters were added, each with dozens of machines. We used Chef for provisioning, and found that it was impossible to keep capistrano up-to-date with the comings and goings of new machines. A separation was needed.
+depl evolved out of Movable Ink's deployments, which typically involved capistrano. Over time, the capistrano scripts got heavier and multiple datacenters were added, each with dozens of machines. We used Chef for provisioning, and found that it was impossible to keep capistrano up-to-date with the comings and goings of new machines. A separation was needed.
 
-## The deploy_s3 workflow
+## The depl workflow
 
-The goal of deploy_s3 is to separate deployment into two parts: specifying that a new version of code should be deployed, and actually deploying that code to the machines that need it.
+The goal of depl is to separate deployment into two parts: specifying that a new version of code should be deployed, and actually deploying that code to the machines that need it.
 
 A typical deployment would look like this:
 
-    » ds3 production
+    » depl production
     Attempting to deploy d836d33
 
     Difference of 6 new commit(s) between de0aed0 and d836d33:
@@ -23,7 +23,7 @@ A typical deployment would look like this:
     Deploy? ([y]es / [n]o / [g]ithub) : y
     Deployed d836d33
 
-deploy_s3 relies on a `.deploy` file to tell it where to write the git hash.  Right now it is tied to Amazon S3, but using fog it could send to any cloud provider.
+depl relies on a `.deploy` file to tell it where to write the git hash.  Right now it is tied to Amazon S3, but using fog it could send to any cloud provider.
 
 Movable Ink uses Chef to push out new code, and Chef can simply read s3 for the revision to know exactly which version to deploy. This allows newly provisioned machines to get the latest deployed version while not requiring changes to the provisioning system every time the project is updated.
 

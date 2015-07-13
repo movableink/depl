@@ -1,2 +1,2 @@
 require 'pry'
-require 'deploy_s3'
+require 'depl'

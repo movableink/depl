@@ -1,10 +1,10 @@
 #!/usr/bin/env ruby
 
 begin
-  require 'deploy_s3'
+  require 'depl'
 rescue LoadError
   require 'rubygems'
-  require 'deploy_s3'
+  require 'depl'
 end
 
 require 'optparse'
@@ -18,7 +18,7 @@ options[:environment] = ARGV.shift
 options[:rev] = ENV['REV']
 
 optparse = OptionParser.new do |opts|
-  opts.banner = "Usage: ds3 [environment] [options]"
+  opts.banner = "Usage: depl [environment] [options]"
 
   opts.on("-c", "--config=CONFIG", String, "Location of .deploy configuration file") do |c|
     options[:config_file] = c
@@ -36,7 +36,7 @@ unless options[:environment]
   exit 1
 end
 
-deploy = DeployS3::Main.new(options)
+deploy = Depl::Main.new(options)
 
 if deploy.up_to_date
   puts "Everything up-to-date (#{deploy.environment.green}: #{deploy.remote_sha.green})"
@@ -72,7 +72,7 @@ when 'y', 'yes'
 
   puts "Deployed #{deploy.remote_sha}"
 when 'g', 'github'
-  url = DeployS3::Remote.comparison(deploy.remote_sha, deploy.local_sha)
+  url = Depl::Remote.comparison(deploy.remote_sha, deploy.local_sha)
   if url
     if `which open`.size > 0
       `open #{url}`

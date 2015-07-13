@@ -1,6 +1,6 @@
 require 'fog'
 
-module DeployS3
+module Depl
   class Main
     def initialize(options)
       config_path = options[:config_file] || "./.deploy"

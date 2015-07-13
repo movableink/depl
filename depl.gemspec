@@ -1,16 +1,16 @@
 $:.push File.expand_path("../lib", __FILE__)
-require "deploy_s3/version"
+require "depl/version"
 
 Gem::Specification.new do |s|
-  s.name        = "deploy_s3"
-  s.version     = DeployS3::VERSION
+  s.name        = "depl"
+  s.version     = Depl::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Michael Nutt"]
   s.email       = ["michael@movableink.com"]
-  s.homepage    = "https://github.com/movableink/deploy_s3"
+  s.homepage    = "https://github.com/movableink/depl"
   s.summary     = %q{Writes project deployment hash to s3 file}
   s.licenses    = "MIT"
-  s.description = %q{Separate out the deployment concerns from your application by using deploy_s3 to write your latest deployed git hash to s3. Then let your provisioning system (for instance, chef + deploy_revision provider) take care of actually deploying new code. deploy_s3 shows diffs between your current branch and the deployed revision.}
+  s.description = %q{Separate out the deployment concerns from your application by using depl to write your latest deployed git hash to s3. Then let your provisioning system (for instance, chef + deploy_revision provider) take care of actually deploying new code. depl shows diffs between your current branch and the deployed revision.}
 
   s.add_runtime_dependency "fog", "~> 1.25"
   s.add_runtime_dependency "highline", "~> 1.6"

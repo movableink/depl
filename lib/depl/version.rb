@@ -1,3 +1,3 @@
-module DeployS3
+module Depl
   VERSION = "0.0.3"
 end

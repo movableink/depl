@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe DeployS3::Main do
+describe Depl::Main do
   let(:deploy) {
-    DeployS3::Main.new(:environment => 'production',
+    Depl::Main.new(:environment => 'production',
                        :config => {'s3' => 'my-bucket/deployments/foo'})
   }
 
