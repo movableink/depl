@@ -1,3 +1,5 @@
+require 'yaml'
+
 module Depl
   class Main
     def initialize(options)
