@@ -2,25 +2,12 @@ require 'spec_helper'
 
 describe Depl::Main do
   let(:deploy) {
-    Depl::Main.new(:environment => 'production',
-                       :config => {'s3' => 'my-bucket/deployments/foo'})
+    Depl::Main.new(:environment => 'production')
   }
 
   describe '#environment' do
     it 'uses the passed environment' do
       expect(deploy.environment).to eq('production')
-    end
-  end
-
-  describe '#filename' do
-    it 'computes the filename' do
-      expect(deploy.filename).to eql('production.sha')
-    end
-  end
-
-  describe '#key' do
-    it 'computes the key' do
-      expect(deploy.key).to eq('deployments/foo/production.sha')
     end
   end
 
@@ -33,6 +20,17 @@ describe Depl::Main do
       deploy.should_receive(:execute).with(cmd)
 
       deploy.diff
+    end
+  end
+
+  describe '#save_sha' do
+    it 'pushes a sha to the origin' do
+      deploy.should_receive(:local_sha).and_return("12345")
+
+      cmd = "git push --force origin 12345:refs/heads/deploy-production"
+      deploy.should_receive(:execute).with(cmd)
+
+      deploy.save_sha
     end
   end
 
