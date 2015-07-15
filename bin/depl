@@ -64,7 +64,7 @@ if deploy.older_local_sha
   puts ""
 end
 
-confirm = ask("Deploy? ([y]es / [n]o / [g]ithub) : ") { |yn| yn.limit = 1, yn.validate = /([yng]|yes|no|github)/i }
+confirm = ask("Deploy #{deploy.environment}? ([y]es / [n]o / [g]ithub) : ") { |yn| yn.limit = 1, yn.validate = /([yng]|yes|no|github)/i }
 
 case confirm.downcase
 when 'y', 'yes'
