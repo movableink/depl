@@ -23,15 +23,11 @@ A typical deployment would look like this:
     Deploy? ([y]es / [n]o / [g]ithub) : y
     Deployed d836d33
 
-depl relies on a `.deploy` file to tell it where to write the git hash.  Right now it is tied to Amazon S3, but using fog it could send to any cloud provider.
-
-Movable Ink uses Chef to push out new code, and Chef can simply read s3 for the revision to know exactly which version to deploy. This allows newly provisioned machines to get the latest deployed version while not requiring changes to the provisioning system every time the project is updated.
+Movable Ink uses Chef to push out new code, and Chef is set up to use environment-based branches for its deployment. This allows newly provisioned machines to get the latest deployed version while not requiring changes to the provisioning system every time the project is updated.
 
 ## History
 
-* _0.0.3_ - Fix command-line option parsing to work as advertised.
-* _0.0.2_ - Always save the full git sha to s3. Many CI and deployment tools always upload using the full sha in the path.
-* _0.0.1_ - Initial release.
+* _0.0.1_ - Forked from deploy_s3; initial release.
 
 ## License
 
