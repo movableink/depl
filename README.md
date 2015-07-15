@@ -27,6 +27,7 @@ Movable Ink uses Chef to push out new code, and Chef is set up to use environmen
 
 ## History
 
+* _0.0.2_ - Updated gem description.
 * _0.0.1_ - Forked from deploy_s3; initial release.
 
 ## License
