@@ -1,15 +1,15 @@
-require 'fog'
-
 module Depl
   class Main
     def initialize(options)
       config_path = options[:config_file] || "./.deploy"
-      @config = options[:config] || YAML::load_file(config_path)
+      @config = options[:config]
 
-      raise "Missing s3: option in .deploy file" unless @config['s3']
+      if File.exist? config_path
+        @config ||= YAML::load_file(config_path)
+      else
+        @config ||= {}
+      end
 
-      @path = @config['s3'].split("/")
-      @bucket = @path.shift
       @options = options
     end
 
@@ -17,11 +17,16 @@ module Depl
       @options[:environment]
     end
 
+    def prefix
+      @config[:prefix] || "deploy-"
+    end
+
+    def deploy_branch
+      "#{prefix}#{environment}"
+    end
+
     def save_sha
-      directory = connection.directories.get(@bucket)
-      file = directory.files.create(:key => key,
-                                    :body => local_sha)
-      @_remote_sha = nil
+      execute("git push --force origin #{local_sha}:refs/heads/#{deploy_branch}")
     end
 
     def run!
@@ -36,24 +41,10 @@ module Depl
       end
     end
 
-    def connection
-      @_connection ||= Fog::Storage.new(:provider => 'AWS')
-    end
-
     def remote_sha
-      return @_remote_sha if @_remote_sha
-
-      directory = connection.directories.get(@bucket)
-      file = directory.files.get(key)
-      @_remote_sha = file.body if file
-    end
-
-    def filename
-      [environment, 'sha'].join('.')
-    end
-
-    def key
-      [@path, filename].join("/")
+      `git fetch origin`
+      sha = execute("git rev-parse -q --verify origin/#{deploy_branch}").chomp
+      sha if sha != ""
     end
 
     def up_to_date
@@ -62,7 +53,8 @@ module Depl
 
     def local_sha
       rev = @options[:rev] || @config[:branch] || 'head'
-      execute("git rev-parse --verify #{rev}").chomp
+      sha = execute("git rev-parse -q --verify #{rev}").chomp
+      sha if sha != ""
     end
 
     def diff

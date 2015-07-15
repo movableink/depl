@@ -12,7 +12,6 @@ Gem::Specification.new do |s|
   s.licenses    = "MIT"
   s.description = %q{Separate out the deployment concerns from your application by using depl to write your latest deployed git hash to s3. Then let your provisioning system (for instance, chef + deploy_revision provider) take care of actually deploying new code. depl shows diffs between your current branch and the deployed revision.}
 
-  s.add_runtime_dependency "fog", "~> 1.25"
   s.add_runtime_dependency "highline", "~> 1.6"
   s.add_runtime_dependency "colorize", "~> 0.7"
 
