@@ -27,7 +27,16 @@ module Depl
       "#{prefix}#{environment}"
     end
 
-    def save_sha
+    def tag_name
+      date = Time.now.strftime('%Y-%m-%d-%H-%M-%S')
+      [prefix, date].join('')
+    end
+
+    def tag_release
+      execute("git tag -a #{tag_name} #{local_sha}")
+    end
+
+    def advance_branch_pointer
       execute("git push --force origin #{local_sha}:refs/heads/#{deploy_branch}")
     end
 
@@ -36,7 +45,8 @@ module Depl
         `#{@config['before_hook']}`
       end
 
-      save_sha
+      tag_release
+      advance_branch_pointer
 
       if @config['after_hook']
         `#{@config['after_hook']}`
@@ -60,11 +70,11 @@ module Depl
     end
 
     def diff
-      execute "git log --pretty=format:'    %h %<(20)%an %ar\t   %s' -10 #{remote_sha}..#{local_sha}"
+      execute "git log --pretty=format:'    %h %<(20)%an %ar\t   %s' #{remote_sha}..#{local_sha}"
     end
 
     def reverse_diff
-      execute "git log --pretty=format:'    %h %<(20)%an %ar\t   %s' -10 #{local_sha}..#{remote_sha}"
+      execute "git log --pretty=format:'    %h %<(20)%an %ar\t   %s' #{local_sha}..#{remote_sha}"
     end
 
     def older_local_sha
