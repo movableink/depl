@@ -49,7 +49,7 @@ module Depl
       sha if sha != ""
     end
 
-    def up_to_date
+    def up_to_date?
       local_sha == remote_sha
     end
 
