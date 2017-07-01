@@ -89,7 +89,9 @@ module Depl
   protected
 
     def execute(cmd)
-      `#{cmd}`
+      output = `#{cmd}`
+      raise "#{cmd} failed" if $?.exitstatus > 0
+      output
     end
   end
 end
