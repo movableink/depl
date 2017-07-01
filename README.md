@@ -27,6 +27,7 @@ Movable Ink uses Chef to push out new code, and Chef is set up to use environmen
 
 ## History
 
+* _0.0.5_ - Tag each deploy so that there is a history.
 * _0.0.4_ - Add --force and --quiet options; better help messages.
 * _0.0.3_ - Fixed yaml dependency.
 * _0.0.2_ - Updated gem description.
