@@ -27,7 +27,7 @@ describe Depl::Main do
     it 'pushes a sha to the origin' do
       expect(deploy).to receive(:local_sha).and_return("12345")
 
-      cmd = "git push --force origin 12345:refs/heads/deploy-production"
+      cmd = "git push --follow-tags --force origin 12345:refs/heads/deploy-production"
       expect(deploy).to receive(:execute).with(cmd)
 
       deploy.advance_branch_pointer

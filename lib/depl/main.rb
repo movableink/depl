@@ -23,21 +23,25 @@ module Depl
       @config[:prefix] || "deploy-"
     end
 
+    def origin
+      @config[:origin] || "origin"
+    end
+
     def deploy_branch
-      "#{prefix}#{environment}"
+      [prefix, environment].join('')
     end
 
     def tag_name
       date = Time.now.strftime('%Y-%m-%d-%H-%M-%S')
-      [prefix, date].join('')
+      [prefix, environment, '-', date].join('')
     end
 
     def tag_release
-      execute("git tag -a #{tag_name} #{local_sha}")
+      execute("git tag -a '#{tag_name}' #{local_sha}")
     end
 
     def advance_branch_pointer
-      execute("git push --force origin #{local_sha}:refs/heads/#{deploy_branch}")
+      execute("git push --follow-tags --force #{origin} #{local_sha}:refs/heads/#{deploy_branch}")
     end
 
     def run!
@@ -54,9 +58,9 @@ module Depl
     end
 
     def remote_sha
-      `git fetch origin`
-      sha = execute("git rev-parse -q --verify origin/#{deploy_branch}").chomp
-      sha if sha != ""
+      `git fetch #{origin}`
+      sha = execute("git rev-parse -q --verify #{origin}/#{deploy_branch}")
+      sha && sha.chomp || raise("missing remote sha for #{origin}/#{deploy_branch}")
     end
 
     def up_to_date?
@@ -65,8 +69,8 @@ module Depl
 
     def local_sha
       rev = @options[:rev] || @config[:branch] || 'head'
-      sha = execute("git rev-parse -q --verify #{rev}").chomp
-      sha if sha != ""
+      sha = execute("git rev-parse -q --verify #{rev}")
+      sha && sha.chomp || raise("missing local sha: #{rev}")
     end
 
     def diff
@@ -79,7 +83,7 @@ module Depl
 
     def older_local_sha
       return false unless remote_sha
-      execute("git merge-base --is-ancestor #{local_sha} #{remote_sha}") && $?.exitstatus == 0
+      !!execute("git merge-base --is-ancestor #{local_sha} #{remote_sha}")
     end
 
     def commit_count
@@ -90,8 +94,7 @@ module Depl
 
     def execute(cmd)
       output = `#{cmd}`
-      raise "#{cmd} failed" if $?.exitstatus > 0
-      output
+      $?.exitstatus == 0 && output
     end
   end
 end
