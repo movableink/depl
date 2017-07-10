@@ -59,7 +59,7 @@ module Depl
 
     def remote_sha
       `git fetch #{origin}`
-      sha = execute("git rev-parse -q --verify #{origin}/#{deploy_branch}")
+      sha = execute_output("git rev-parse -q --verify #{origin}/#{deploy_branch}")
       sha && sha.chomp || raise("missing remote sha for #{origin}/#{deploy_branch}")
     end
 
@@ -69,21 +69,21 @@ module Depl
 
     def local_sha
       rev = @options[:rev] || @config[:branch] || 'head'
-      sha = execute("git rev-parse -q --verify #{rev}")
+      sha = execute_output("git rev-parse -q --verify #{rev}")
       sha && sha.chomp || raise("missing local sha: #{rev}")
     end
 
     def diff
-      execute "git log --pretty=format:'    %h %<(20)%an %ar\t   %s' #{remote_sha}..#{local_sha}"
+      execute_output "git log --pretty=format:'    %h %<(20)%an %ar\t   %s' #{remote_sha}..#{local_sha}"
     end
 
     def reverse_diff
-      execute "git log --pretty=format:'    %h %<(20)%an %ar\t   %s' #{local_sha}..#{remote_sha}"
+      execute_output "git log --pretty=format:'    %h %<(20)%an %ar\t   %s' #{local_sha}..#{remote_sha}"
     end
 
     def older_local_sha
       return false unless remote_sha
-      !!execute("git merge-base --is-ancestor #{local_sha} #{remote_sha}")
+      !!execute_output("git merge-base --is-ancestor #{local_sha} #{remote_sha}")
     end
 
     def commit_count
@@ -92,9 +92,21 @@ module Depl
 
   protected
 
+    def execute_output(cmd)
+      rd, wr = IO.pipe
+
+      pid = spawn(cmd, out: wr, err: wr)
+      pid, status = Process.wait2(pid)
+
+      wr.close
+      status.exitstatus == 0 && rd.read
+    end
+
     def execute(cmd)
-      output = `#{cmd}`
-      $?.exitstatus == 0 && output
+      pid = spawn(cmd)
+      pid, status = Process.wait2(pid)
+
+      status.exitstatus == 0
     end
   end
 end
